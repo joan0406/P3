@@ -3,19 +3,41 @@
 #include <iostream>
 #include <math.h>
 #include "pitch_analyzer.h"
+#include <fstream> //
 
 using namespace std;
 
 /// Name space of UPC
 namespace upc {
+
+  void save_to_file(const std::vector<float> &data, const std::string &filename) 
+
+{ std::ofstream file(filename); 
+for (const auto &value : data) 
+{ file << value << std::endl; } 
+file.close(); 
+}  
+
+
   void PitchAnalyzer::autocorrelation(const vector<float> &x, vector<float> &r) const {
 
+
+
     for (unsigned int l = 0; l < r.size(); ++l) {
-  		/// \TODO Compute the autocorrelation r[l]
+      
+      /// \TODO Compute the autocorrelation r[l]
+      /// \FET autocorrelacio calculada
+      r[l] = 0;
+      for(unsigned int n=l; n< x.size(); n++){
+        r[l]+= x[n-l]*x[n];
+      }
+      r[l]=r[l]/x.size();
+      
     }
 
     if (r[0] == 0.0F) //to avoid log() and divide zero 
       r[0] = 1e-10; 
+
   }
 
   void PitchAnalyzer::set_window(Window win_type) {
@@ -27,6 +49,8 @@ namespace upc {
     switch (win_type) {
     case HAMMING:
       /// \TODO Implement the Hamming window
+
+
       break;
     case RECT:
     default:
@@ -48,9 +72,14 @@ namespace upc {
 
   bool PitchAnalyzer::unvoiced(float pot, float r1norm, float rmaxnorm) const {
     /// \TODO Implement a rule to decide whether the sound is voiced or not.
+    /// \FET Decision sordo o sonoro segun llindar rmxax
     /// * You can use the standard features (pot, r1norm, rmaxnorm),
     ///   or compute and use other ones.
-    return true;
+if(rmaxnorm<this->llindar_rmax){
+  return true; //sordo
+}
+
+    return false; //sonoro
   }
 
   float PitchAnalyzer::compute_pitch(vector<float> & x) const {
@@ -69,6 +98,7 @@ namespace upc {
     vector<float>::const_iterator iR = r.begin(), iRMax = iR;
 
     /// \TODO 
+    /// \FET màxim autocorrelació
 	/// Find the lag of the maximum value of the autocorrelation away from the origin.<br>
 	/// Choices to set the minimum value of the lag are:
 	///    - The first negative value of the autocorrelation.
@@ -76,7 +106,14 @@ namespace upc {
     ///	   .
 	/// In either case, the lag should not exceed that of the minimum value of the pitch.
 
-    unsigned int lag = iRMax - r.begin();
+    float rMax= r[npitch_min];
+    unsigned int  lag = npitch_min;
+    for(unsigned int l= npitch_min; l<npitch_max; l++){
+      if(r[l]>rMax){
+        lag = l;
+        rMax = r[l];
+      }
+    }
 
     float pot = 10 * log10(r[0]);
 

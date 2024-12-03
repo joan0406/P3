@@ -9,24 +9,75 @@ Recuerde realizar el *pull request* al repositorio original una vez completada l
 
 Ejercicios básicos
 ------------------
+- Tareas TODO:
+    ![TODO.html](img/1todo)
+    ![get_pitch](img/get_pitch)
+    ![run_get_pitch](img/run_get_pitch.png)
 
 - Complete el código de los ficheros necesarios para realizar la estimación de pitch usando el programa
   `get_pitch`.
 
    * Complete el cálculo de la autocorrelación e inserte a continuación el código correspondiente.
+    
+   **Codigo Autocorrelación**
+    for (unsigned int l = 0; l < r.size(); ++l) {
+      
+      void PitchAnalyzer::autocorrelation(const vector<float> &x, vector<float> &r) const {
+      /// \TODO Compute the autocorrelation r[l]
+      /// \FET autocorrelacio calculada
+      r[l] = 0;
+      for(unsigned int n=l; n< x.size(); n++){
+        r[l]+= x[n-l]*x[n];
+      }
+      r[l]=r[l]/x.size();
+      
+    }
+
+    if (r[0] == 0.0F) //to avoid log() and divide zero 
+      r[0] = 1e-10; 
+    }
+
 
    * Inserte una gŕafica donde, en un *subplot*, se vea con claridad la señal temporal de un segmento de
      unos 30 ms de un fonema sonoro y su periodo de pitch; y, en otro *subplot*, se vea con claridad la
 	 autocorrelación de la señal y la posición del primer máximo secundario.
+
+   **Gráfica de la señal temporal de un fonema sonoro de 30ms y su autocorrelación con el primer máximo secundario y el periodo de pitch**
+
+    ![Señal Temporal y Autocorrelación](img/autocorrelation_with_second_peak_corrected.png)
 
 	 NOTA: es más que probable que tenga que usar Python, Octave/MATLAB u otro programa semejante para
 	 hacerlo. Se valorará la utilización de la biblioteca matplotlib de Python.
 
    * Determine el mejor candidato para el periodo de pitch localizando el primer máximo secundario de la
      autocorrelación. Inserte a continuación el código correspondiente.
+    
+   **Codigo primer máximo secundario de la autocorrelación después del origen**
+
+      vector<float>::const_iterator iR = r.begin(), iRMax = iR;
+
+      float rMax= r[npitch_min];
+      unsigned int  lag = npitch_min;
+      for(unsigned int l= npitch_min; l<npitch_max; l++){
+      if(r[l]>rMax){
+        lag = l;
+        rMax = r[l];
+      }
+    }
 
    * Implemente la regla de decisión sonoro o sordo e inserte el código correspondiente.
+   
+   **Codigo regla de decisió sordo o sonoro segun el llindar**
+    
+    bool PitchAnalyzer::unvoiced(float pot, float r1norm, float rmaxnorm) const {
+    
+      if(rmaxnorm<this->llindar_rmax){
+        return true; //sordo
+      }
+        return false; //sonoro
+    }
 
+   
    * Puede serle útil seguir las instrucciones contenidas en el documento adjunto `código.pdf`.
 
 - Una vez completados los puntos anteriores, dispondrá de una primera versión del estimador de pitch. El 
