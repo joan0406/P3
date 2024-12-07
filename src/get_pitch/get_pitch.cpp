@@ -69,11 +69,11 @@ int main(int argc, const char *argv[]) {
   /// Preprocess the input signal in order to ease pitch estimation. For instance,
   /// central-clipping or low pass filtering may be used.
   float th_clipping = 0.004;
-for(int i = 0; i < (int)x.size(); i++) {
+  for(int i = 0; i < (int)x.size(); i++) {
   if(abs(x[i]) < th_clipping) {
     x[i] = 0.0F;
- }
-}
+    }
+  }
   // Iterate for each frame and save values in f0 vector
   vector<float>::iterator iX;
   vector<float> f0;

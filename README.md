@@ -96,13 +96,16 @@ Ejercicios básicos
 	    Recuerde configurar los paneles de datos para que el desplazamiento de ventana sea el adecuado, que
 		en esta práctica es de 15 ms.
 
+    **Gráfica wavesurfer indicando los principales candidatos para determinar sonoridad**
+
+    ![Wavesurfer](img/wavesurfer.png)
+
       - Use el estimador de pitch implementado en el programa `wavesurfer` en una señal de prueba y compare
 	    su resultado con el obtenido por la mejor versión de su propio sistema.  Inserte una gráfica
 		ilustrativa del resultado de ambos estimadores.
 
-    **Gráfica wavesurfer indicando los principales candidatos para determinar sonoridad**
-
-    ![Wavesurfer](img/wavesurfer.png)
+    
+    ![Estimador](img/EstimadorNostre_Referencia.png)
 
     En la primera podemos ver el pitch contourn, luego vemos la gráfica de power plot y por último las gráficas de r1norm y rmaxnorm respectivamente. Hemos creado un script python llamado procesar_audio que genera los .txt con la información de las anteriores gráficas.
      
@@ -142,10 +145,11 @@ Ejercicios de ampliación
   * Técnicas de preprocesado: filtrado paso bajo, diezmado, *center clipping*, etc.
   
   **Central Clipping**
+  
   float th_clipping = 0.004;
-    for(int i = 0; i < (int)x.size(); i++) {
-     if(abs(x[i]) < th_clipping) {
-     x[i] = 0.0F;
+  for(int i = 0; i < (int)x.size(); i++) {
+  if(abs(x[i]) < th_clipping) {
+    x[i] = 0.0F;
     }
   }
 
@@ -154,6 +158,7 @@ Con un central clipping y probando diferentes tresholds hemos conseguido subir e
   * Técnicas de postprocesado: filtro de mediana, *dynamic time warping*, etc.
   
   **Filtro de Mediana**
+  
   float L = 1;
   vector<float> med(L);
 
