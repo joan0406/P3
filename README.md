@@ -9,24 +9,75 @@ Recuerde realizar el *pull request* al repositorio original una vez completada l
 
 Ejercicios básicos
 ------------------
+- Tareas TODO:
+    ![TODO.html](img/1todo)
+    ![get_pitch](img/get_pitch)
+    ![run_get_pitch](img/run_get_pitch.png)
 
 - Complete el código de los ficheros necesarios para realizar la estimación de pitch usando el programa
   `get_pitch`.
 
    * Complete el cálculo de la autocorrelación e inserte a continuación el código correspondiente.
+    
+   **Codigo Autocorrelación**
+    for (unsigned int l = 0; l < r.size(); ++l) {
+      
+      void PitchAnalyzer::autocorrelation(const vector<float> &x, vector<float> &r) const {
+      /// \TODO Compute the autocorrelation r[l]
+      /// \FET autocorrelacio calculada
+      r[l] = 0;
+      for(unsigned int n=l; n< x.size(); n++){
+        r[l]+= x[n-l]*x[n];
+      }
+      r[l]=r[l]/x.size();
+      
+    }
+
+    if (r[0] == 0.0F) //to avoid log() and divide zero 
+      r[0] = 1e-10; 
+    }
+
 
    * Inserte una gŕafica donde, en un *subplot*, se vea con claridad la señal temporal de un segmento de
      unos 30 ms de un fonema sonoro y su periodo de pitch; y, en otro *subplot*, se vea con claridad la
 	 autocorrelación de la señal y la posición del primer máximo secundario.
+
+   **Gráfica de la señal temporal de un fonema sonoro de 30ms y su autocorrelación con el primer máximo secundario y el periodo de pitch**
+
+    ![Señal Temporal y Autocorrelación](img/autocorrelation_with_second_peak_corrected.png)
 
 	 NOTA: es más que probable que tenga que usar Python, Octave/MATLAB u otro programa semejante para
 	 hacerlo. Se valorará la utilización de la biblioteca matplotlib de Python.
 
    * Determine el mejor candidato para el periodo de pitch localizando el primer máximo secundario de la
      autocorrelación. Inserte a continuación el código correspondiente.
+    
+   **Codigo primer máximo secundario de la autocorrelación después del origen**
+
+      vector<float>::const_iterator iR = r.begin(), iRMax = iR;
+
+      float rMax= r[npitch_min];
+      unsigned int  lag = npitch_min;
+      for(unsigned int l= npitch_min; l<npitch_max; l++){
+      if(r[l]>rMax){
+        lag = l;
+        rMax = r[l];
+      }
+    }
 
    * Implemente la regla de decisión sonoro o sordo e inserte el código correspondiente.
+   
+   **Codigo regla de decisión sordo o sonoro segun el llindar**
+    
+    bool PitchAnalyzer::unvoiced(float pot, float r1norm, float rmaxnorm) const {
+    
+      if(rmaxnorm<this->llindar_rmax){
+        return true; //sordo
+      }
+        return false; //sonoro
+    }
 
+   
    * Puede serle útil seguir las instrucciones contenidas en el documento adjunto `código.pdf`.
 
 - Una vez completados los puntos anteriores, dispondrá de una primera versión del estimador de pitch. El 
@@ -48,6 +99,12 @@ Ejercicios básicos
       - Use el estimador de pitch implementado en el programa `wavesurfer` en una señal de prueba y compare
 	    su resultado con el obtenido por la mejor versión de su propio sistema.  Inserte una gráfica
 		ilustrativa del resultado de ambos estimadores.
+
+    **Gráfica wavesurfer indicando los principales candidatos para determinar sonoridad**
+
+    ![Wavesurfer](img/wavesurfer.png)
+
+    En la primera podemos ver el pitch contourn, luego vemos la gráfica de power plot y por último las gráficas de r1norm y rmaxnorm respectivamente. Hemos creado un script python llamado procesar_audio que genera los .txt con la información de las anteriores gráficas.
      
 		Aunque puede usar el propio Wavesurfer para obtener la representación, se valorará
 	 	el uso de alternativas de mayor calidad (particularmente Python).
@@ -55,6 +112,12 @@ Ejercicios básicos
   * Optimice los parámetros de su sistema de estimación de pitch e inserte una tabla con las tasas de error
     y el *score* TOTAL proporcionados por `pitch_evaluate` en la evaluación de la base de datos 
 	`pitch_db/train`..
+   
+   **Comparación del Score total original vs ampliación hecha**
+
+   ![run_get_pitch_sinmejoras](img/run_get_pitch_sinmejoras.png)
+   ![run_get_pitch_conmejoras](img/run_get_pitch_conmejoras.png)
+
 
 Ejercicios de ampliación
 ------------------------
@@ -68,6 +131,8 @@ Ejercicios de ampliación
 
   * Inserte un *pantallazo* en el que se vea el mensaje de ayuda del programa y un ejemplo de utilización
     con los argumentos añadidos.
+    
+    ![Mensaje de ayuda](img/ayudas.png)
 
 - Implemente las técnicas que considere oportunas para optimizar las prestaciones del sistema de estimación
   de pitch.
@@ -75,7 +140,34 @@ Ejercicios de ampliación
   Entre las posibles mejoras, puede escoger una o más de las siguientes:
 
   * Técnicas de preprocesado: filtrado paso bajo, diezmado, *center clipping*, etc.
+  
+  **Central Clipping**
+  float th_clipping = 0.004;
+    for(int i = 0; i < (int)x.size(); i++) {
+     if(abs(x[i]) < th_clipping) {
+     x[i] = 0.0F;
+    }
+  }
+
+Con un central clipping y probando diferentes tresholds hemos conseguido subir el score final a 89.00%
+
   * Técnicas de postprocesado: filtro de mediana, *dynamic time warping*, etc.
+  
+  **Filtro de Mediana**
+  float L = 1;
+  vector<float> med(L);
+
+  for(int i = (L-1)/2; i < f0.size() - (L-1)/2; i++){
+    for(int j = 0; j < L; j++){
+      med[j] = f0[i+j-((L-1)/2)];
+    }
+    sort(med.begin(), med.end());
+
+    f0[i] = med[(L-1)/2];
+  }
+  
+  Hemos visto que  al implementar el filtro de mediana no mejoramos el score final y por tanto hemos dejado en L=1 que no hace nada.
+
   * Métodos alternativos a la autocorrelación: procesado cepstral, *average magnitude difference function*
     (AMDF), etc.
   * Optimización **demostrable** de los parámetros que gobiernan el estimador, en concreto, de los que
